@@ -15,7 +15,7 @@ Página mobile, leve e rápida para colocar na bio do Instagram / YouTube / TikT
 ## 1. Banco (Supabase) — 3 min
 
 1. Crie um projeto em supabase.com (ou use o seu existente).
-2. **SQL Editor** → cole o conteúdo de `supabase/schema.sql` → **Run**.
+2. **SQL Editor** → cole o conteúdo de `supabase/schema.sql` → **Run**. Depois faça o mesmo com `supabase/publications.sql`.
 3. Em **Project Settings → API**, copie a `Project URL` e a `service_role` key.
 
 ## 2. API de afiliados da Shopee (opcional, mas recomendado)
@@ -70,4 +70,5 @@ components/AdminPanel.js UI do painel
 lib/shopee.js            Shopee Affiliate Open API (productOfferV2 + generateShortLink)
 lib/importer.js          detecta plataforma e puxa dados do link
 supabase/schema.sql      tabela + função de cliques
+supabase/publications.sql  Central de Publicações (rode depois do schema.sql)
 ```

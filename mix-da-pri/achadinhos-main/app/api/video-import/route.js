@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { importFromUrl } from "@/lib/importer";
 
 export const dynamic = "force-dynamic";
@@ -23,33 +23,13 @@ export async function POST(req) {
     );
   }
 
-  const a = Buffer.from(expected);
-  const b = Buffer.from(supplied);
-
-  if (a.length !== b.length) {
-    console.error("[video-import] Tamanho divergente:", {
-      serverLength: a.length,
-      receivedLength: b.length
-    });
-
-    return Response.json(
-      {
-        error: "As chaves possuem tamanhos diferentes",
-        code: "TOKEN_LENGTH_MISMATCH",
-        serverLength: a.length,
-        receivedLength: b.length
-      },
-      { status: 401 }
-    );
-  }
+  // Compara por hash: mesmo tamanho sempre, e a resposta não revela nada sobre o token certo
+  const a = createHash("sha256").update(expected).digest();
+  const b = createHash("sha256").update(supplied).digest();
 
   if (!timingSafeEqual(a, b)) {
-    console.error("[video-import] Chaves de mesmo tamanho, mas diferentes");
-
-    return Response.json(
-      { error: "As chaves possuem o mesmo tamanho, mas são diferentes", code: "TOKEN_MISMATCH" },
-      { status: 401 }
-    );
+    console.error("[video-import] Token inválido");
+    return Response.json({ error: "Token inválido", code: "TOKEN_INVALID" }, { status: 401 });
   }
 
   const { url } = await req.json().catch(() => ({}));

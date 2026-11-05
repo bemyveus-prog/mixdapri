@@ -1,9 +1,11 @@
 name: Achado do dia
 
 on:
-  schedule:
-    # 10:40 UTC = 7:40 em Brasília (o GitHub pode atrasar alguns minutos)
-    - cron: "40 10 * * *"
+  # Agendamento DESLIGADO de propósito: por enquanto só roda quando você clicar em "Run workflow".
+  # Para ligar todo dia às 7h40 (Brasília), tire o "#" das 3 linhas abaixo.
+  # schedule:
+  #   # 10:40 UTC = 7:40 em Brasília (o GitHub pode atrasar alguns minutos)
+  #   - cron: "40 10 * * *"
   workflow_dispatch:
     inputs:
       sem_vitrine:
@@ -21,7 +23,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: automacao
+        working-directory: mix-da-pri/achadinhos-main/automacao
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: automacao/package-lock.json
+          cache-dependency-path: mix-da-pri/achadinhos-main/automacao/package-lock.json
 
       - name: Instalar
         run: |
@@ -69,6 +71,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: carrossel-${{ github.run_number }}
-          path: automacao/saida/
+          path: mix-da-pri/achadinhos-main/automacao/saida/
           retention-days: 14
           if-no-files-found: ignore
