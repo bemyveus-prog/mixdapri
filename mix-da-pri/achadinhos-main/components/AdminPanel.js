@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PublicationsCenter from "./PublicationsCenter";
 
 const EMPTY = {
-  kind: "produto", title: "", description: "", image_url: "", price: "", original_price: "",
+  kind: "produto", title: "", description: "", image_url: "", image_urls: [], price: "", original_price: "",
   link: "", platform: "shopee", category: "", coupon_code: "", badge: "", pinned: false,
   active: true, expires_at: "",
 };
@@ -308,6 +309,8 @@ export default function AdminPanel({ dbReady, shopeeReady }) {
           <button className="btn" disabled={busy || !dbReady}>{editing ? "Salvar alterações" : "Publicar na vitrine"}</button>
         </div>
       </form>
+
+      <PublicationsCenter dbReady={dbReady} />
 
       <div className="panel">
         <h2>Minhas ofertas ({items.length})</h2>
