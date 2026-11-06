@@ -1,4 +1,5 @@
 import { hasShopeeApi, parseShopeeIds, shopeeProduct, shopeeShortLink } from "./shopee";
+import { importShein, isShein } from "./shein";
 
 // A Shopee responde diferente conforme quem acessa: para celular devolve uma página
 // que tenta abrir o app (sem redirecionar). Tentamos várias identificações até achar o produto.
@@ -13,6 +14,7 @@ export function detectPlatform(url) {
   const h = (() => { try { return new URL(url).hostname; } catch { return ""; } })();
   if (/shopee\.|shp\.ee/.test(h)) return "shopee";
   if (/tiktok\.com/.test(h)) return "tiktok";
+  if (isShein(url)) return "shein";
   return "outro";
 }
 
@@ -95,6 +97,7 @@ function cleanTitle(t) {
 export async function importFromUrl(rawUrl) {
   const url = rawUrl.trim();
   const platform = detectPlatform(url);
+  if (platform === "shein") return importShein(url);
   const warnings = [];
   const out = { platform, link: url, title: null, image_url: null, price: null, original_price: null };
 

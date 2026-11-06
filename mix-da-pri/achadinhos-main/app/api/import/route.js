@@ -2,6 +2,7 @@ import { isAdmin, unauthorized } from "@/lib/auth";
 import { importFromUrl } from "@/lib/importer";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30; // SHEIN abre até 2 páginas
 
 export async function POST(req) {
   if (!(await isAdmin())) return unauthorized();

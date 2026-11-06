@@ -60,6 +60,7 @@ export default function AdminPanel({ dbReady, shopeeReady }) {
       image_url: j.image_url || f.image_url,
       price: j.price ?? f.price,
       original_price: j.original_price ?? f.original_price,
+      image_urls: Array.isArray(j.image_urls) && j.image_urls.length ? j.image_urls : f.image_urls,
     }));
     const extra = j.commission ? ` Comissão: ${j.commission}%.` : "";
     setMsg(
@@ -199,7 +200,7 @@ export default function AdminPanel({ dbReady, shopeeReady }) {
 
         {!isCoupon && (
           <div className="field">
-            <label>Cole o link (Shopee ou TikTok Shop) e puxe os dados</label>
+            <label>Cole o link (Shopee, SHEIN ou TikTok Shop) e puxe os dados</label>
             <div className="inline">
               <input value={importUrl} onChange={(e) => setImportUrl(e.target.value)} placeholder="https://shopee.com.br/..." inputMode="url" />
               <button type="button" className="btn orange" onClick={doImport} disabled={busy || !importUrl}>
@@ -265,6 +266,7 @@ export default function AdminPanel({ dbReady, shopeeReady }) {
             <label>Plataforma</label>
             <select value={form.platform} onChange={(e) => set("platform", e.target.value)}>
               <option value="shopee">Shopee</option>
+              <option value="shein">SHEIN</option>
               <option value="tiktok">TikTok Shop</option>
               <option value="outro">Outra loja</option>
             </select>

@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { importFromUrl } from "@/lib/importer";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30; // SHEIN abre até 2 páginas
 
 export async function POST(req) {
   const expected = process.env.VIDEO_STUDIO_TOKEN || "";
