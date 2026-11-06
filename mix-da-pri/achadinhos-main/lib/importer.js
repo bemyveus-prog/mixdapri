@@ -79,6 +79,14 @@ function decode(s) {
   return s.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 }
 
+function isGenericTitle(t) {
+  if (!t) return false;
+  const s = t.trim();
+  // começa com frase de propaganda, ou é só o nome da loja
+  return /^(n[ãa]o perca|compre (agora|j[áa])|aproveite|confira|descubra)\b|oferta(s)? (grande|imperd[ií]vel|incr[ií]vel)|moda online/i.test(s)
+    || /^(shein|tiktok( shop)?|loja)( brasil| oficial)?[\s|!.\-–]*$/i.test(s);
+}
+
 function cleanTitle(t) {
   if (!t) return null;
   return t.replace(/\s*\|\s*Shopee Brasil.*$/i, "").replace(/\s*[-|]\s*TikTok.*$/i, "").trim();
@@ -149,6 +157,11 @@ export async function importFromUrl(rawUrl) {
     if (platform === "shopee" && /^shopee( brasil)?\b|ofertas incr[ií]veis/i.test(out.title || "")) {
       out.title = null;
       out.image_url = null;
+    }
+    // Outras lojas (ex: SHEIN) às vezes devolvem um texto promocional no lugar do nome do produto
+    if (platform !== "shopee" && isGenericTitle(out.title)) {
+      out.title = null;
+      warnings.push("A loja devolveu um título genérico em vez do nome do produto. Preencha o título à mão.");
     }
     if (!out.title || !out.image_url) warnings.push("Não consegui ler tudo da página. Complete título/foto manualmente.");
   }

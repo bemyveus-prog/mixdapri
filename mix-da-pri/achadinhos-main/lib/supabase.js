@@ -40,6 +40,12 @@ export function sanitizeOffer(input) {
     if (k === "kind" && !["produto", "cupom"].includes(v)) v = "produto";
     out[k] = v;
   }
+  // Galeria de fotos extras (usada no gerador de carrossel). Só entra quando tem foto,
+  // assim salvar oferta continua funcionando mesmo antes de rodar supabase/publications.sql.
+  if (Array.isArray(input.image_urls)) {
+    const urls = [...new Set(input.image_urls.map((u) => String(u || "").trim()).filter((u) => /^https?:\/\//i.test(u)))].slice(0, 10);
+    if (urls.length) out.image_urls = urls;
+  }
   return out;
 }
 

@@ -53,7 +53,7 @@ Os números vêm sempre da API. A IA (opcional) só escreve gancho e destaques a
 
 ## Rodar pelo GitHub Actions (sem VPS)
 
-O arquivo `.github/workflows/achado-do-dia.yml` roda tudo todo dia às 7h40 (Brasília) nos servidores do GitHub.
+O arquivo `.github/workflows/achado-do-dia.yml` (na raiz do repositório) roda tudo nos servidores do GitHub. Vem só com execução manual; para rodar todo dia às 7h40 (Brasília), descomente o bloco `schedule` no arquivo.
 
 1. No GitHub: **Settings → Secrets and variables → Actions → New repository secret**, cadastre:
    `SHOPEE_APP_ID`, `SHOPEE_APP_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
