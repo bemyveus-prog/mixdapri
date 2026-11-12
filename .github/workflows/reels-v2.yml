@@ -1,0 +1,109 @@
+name: Reels v2 (adivinha o preço)
+
+# Vídeo curto com a foto da categoria, "quanto você acha que custa?" e chamada para comentar.
+# O vídeo chega no Telegram com a legenda sugerida. Com "postar", vai direto para o Instagram.
+on:
+  schedule:
+    # 3 Reels por dia, postados no Instagram (Brasília): 11:37, 17:37 e 20:37
+    - cron: "37 14,20,23 * * *"
+  workflow_dispatch:
+    inputs:
+      busca:
+        description: "Produto para buscar na Shopee (ex.: blusa feminina)"
+        default: "blusa feminina"
+      oferta:
+        description: "OU número de um produto que já está na vitrine (ex.: 91)"
+        default: ""
+      cj_sku:
+        description: "SKU da CJ para usar o vídeo real do produto (opcional)"
+        default: ""
+      video:
+        description: "Vídeo enviado pelo bot (nome no Storage reels-videos), opcional"
+        default: ""
+      fotos:
+        description: "Pasta de fotos enviadas pelo bot (Storage reels-videos), opcional"
+        default: ""
+      modo:
+        description: "instagram (final com Seguir + link da bio), shopee (final chamando para o produto do Shopee Vídeo) ou link (final genérico: clique no link abaixo)"
+        default: "instagram"
+      fala:
+        description: "Texto narrado na parte do produto (opcional)"
+        default: ""
+      gerar_fala:
+        description: "1 = criar a narração a partir do produto (vídeos do grupo)"
+        default: ""
+      contexto:
+        description: "Texto que veio com o vídeo (ajuda a criar a narração)"
+        default: ""
+      postar:
+        description: "Postar no Instagram"
+        type: boolean
+        default: false
+
+# sem fila única: vários vídeos podem ser gerados ao mesmo tempo (encaminhar muitos de uma vez)
+
+env:
+  MARCA: ${{ vars.MARCA }}
+  MARCA_DAGUA: ${{ vars.MARCA_DAGUA }}
+
+jobs:
+  reels:
+    if: github.event_name != 'schedule' || github.repository == 'bemyveus-prog/achadinhos' || vars.AGENDA == 'ligada'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: automacao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automacao/package-lock.json
+      - name: Instalar
+        run: |
+          npm ci
+          bash "$GITHUB_WORKSPACE/.github/prepara-render.sh"
+      - name: Gerar o Reels
+        run: >
+          node reels2.mjs
+          ${{ github.event_name == 'schedule' && (vars.REELS_APROVAR == 'sim' && '--auto' || '--auto --postar') || '' }}
+          ${{ github.event_name != 'schedule' && (inputs.oferta && format('--oferta {0}', inputs.oferta) || format('--busca "{0}"', inputs.busca || 'blusa feminina')) || '' }}
+          ${{ inputs.cj_sku && format('--cj "{0}"', inputs.cj_sku) || '' }}
+          ${{ inputs.postar && '--postar' || '' }}
+        env:
+          CJ_API_KEY: ${{ secrets.CJ_API_KEY }}
+          REELS_FALA: ${{ inputs.fala }}
+          REELS_MODO: ${{ inputs.modo }}
+          REELS_FOTOS: ${{ inputs.fotos }}
+          VIDEO_PRECO: ${{ vars.VIDEO_PRECO }}
+          REELS_GERAR_FALA: ${{ inputs.gerar_fala }}
+          REELS_CONTEXTO: ${{ inputs.contexto }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL_NARRACAO: ${{ vars.ANTHROPIC_MODEL_NARRACAO }}
+          REELS_VIDEO: ${{ inputs.video }}
+          INSTAGRAM_HANDLE: ${{ vars.INSTAGRAM_HANDLE }}
+          SHOPEE_APP_ID: ${{ secrets.SHOPEE_APP_ID }}
+          SHOPEE_APP_SECRET: ${{ secrets.SHOPEE_APP_SECRET }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YOUTUBE_POSTAR: ${{ vars.YOUTUBE_POSTAR }}
+          YOUTUBE_PRIVACIDADE: ${{ vars.YOUTUBE_PRIVACIDADE }}
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+          FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
+          FISH_VOICE_ID: ${{ vars.FISH_VOICE_ID }}
+          EDGE_VOICE: ${{ vars.EDGE_VOICE }}
+          DIAS_NA_VITRINE: ${{ vars.DIAS_NA_VITRINE }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reels-v2
+          path: automacao/saida/reels2/
+          if-no-files-found: ignore

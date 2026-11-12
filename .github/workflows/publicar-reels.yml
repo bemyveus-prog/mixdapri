@@ -1,0 +1,47 @@
+name: Publicar Reels aprovado
+
+# Disparado pelos botões "📤 Postar no Instagram" (Instagram + YouTube) e "▶️ Postar no YouTube" (só YouTube) do bot do Telegram.
+on:
+  workflow_dispatch:
+    inputs:
+      id:
+        description: "Número do Reels pendente (tabela reels_pendentes)"
+        required: true
+      so_youtube:
+        description: "true = posta só no YouTube"
+        required: false
+        default: ""
+
+env:
+  MARCA: ${{ vars.MARCA }}
+  MARCA_DAGUA: ${{ vars.MARCA_DAGUA }}
+
+jobs:
+  publicar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: automacao
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+      META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      YOUTUBE_POSTAR: ${{ vars.YOUTUBE_POSTAR }}
+      YOUTUBE_PRIVACIDADE: ${{ vars.YOUTUBE_PRIVACIDADE }}
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automacao/package-lock.json
+      - run: npm ci
+      - run: node publicar-reels.mjs --id "${{ inputs.id }}" ${{ inputs.so_youtube == 'true' && '--so-youtube' || '' }}
