@@ -59,7 +59,17 @@ async function main() {
       log(`@${cm.username}: "${String(cm.text).slice(0, 60)}" → #${n || "?"} ${link}`);
       if (teste) { ja.add(cm.id); continue; }
       try {
-        await graph("POST", `${PAGE || IG}/messages`, { recipient: JSON.stringify({ comment_id: cm.id }), message: JSON.stringify({ text: texto }) });
+        // resposta privada: a API aceita pela conta do Instagram ou pela Página (depende de como o app foi configurado)
+        let ultimoErro = null, ok = false;
+        for (const dono of [PAGE, IG].filter(Boolean)) {
+          try { await graph("POST", `${dono}/messages`, { recipient: JSON.stringify({ comment_id: cm.id }), message: JSON.stringify({ text: texto }) }); ok = true; break; }
+          catch (e) {
+            // a Meta às vezes entrega a mensagem e mesmo assim devolve "Invalid message id"; "já tem uma resposta" = já foi enviada
+            if (/invalid message id|já tem uma resposta|already (been )?repl/i.test(e.message)) { ok = true; log(`  (Meta respondeu "${e.message}", mas a mensagem foi entregue)`); break; }
+            ultimoErro = e; log(`  via ${dono === IG ? "Instagram" : "Página"}: ${e.message}`);
+          }
+        }
+        if (!ok) throw ultimoErro;
         enviados++;
         await graph("POST", `${cm.id}/replies`, { message: ["Te mandei no direct! 💛", "Já te enviei o link no direct 📩", "Mandei no seu direct, confere lá! ✨"][enviados % 3] }).catch((e) => log(`  resposta pública: ${e.message}`));
         ja.add(cm.id);
